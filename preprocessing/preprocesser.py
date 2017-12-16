@@ -16,7 +16,7 @@ class Preprocesser:
             self.w2id = {}
         else:
             self.w2id = w2id
-        self.id2word = {y: x for x,y in self.w2id.items()}
+        self.id2word = ["", "_UNK_"] + sorted(self.w2id.keys(), key=lambda x: self.w2id[x])
 
     def tokenize(self, text):
         return text_to_word_sequence(text)
@@ -28,7 +28,7 @@ class Preprocesser:
                 word_counts[w] += 1
         vocab = [x[0] for x in word_counts.most_common(self.vocab_size-2)] # Leave space for 0 and UNK
         self.w2id = {w: i+2 for i, w in enumerate(vocab)}
-        self.id2word = {y: x for x, y in self.w2id.items()}
+        self.id2word = ["", "_UNK_"] + vocab
 
     def texts_to_sequences(self, texts):
         sequences = []
@@ -55,3 +55,11 @@ class Preprocesser:
             self.fit_on_texts(raw_texts)
         seq = self.texts_to_sequences(raw_texts)
         return pad_sequences(seq, maxlen=self.maxlen, value=_PAD_)
+
+    
+    def vocab_to_file(self, f):
+        with open(f,'w') as out:
+            for w in self.id2word:
+                out.write(w)
+                out.write("\n")
+        return f
